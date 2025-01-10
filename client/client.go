@@ -22,6 +22,12 @@ type Client struct {
 }
 
 func NewClient(baseURL string, options ...Options) (*Client, error) {
+	var opts Options
+
+	if len(options) > 0 {
+		opts = options[0]
+	}
+
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
@@ -29,8 +35,8 @@ func NewClient(baseURL string, options ...Options) (*Client, error) {
 
 	client := &Client{
 		BaseURL:             parsedURL,
-		Headers:             options[0].Headers,
-		SkipSSLVerification: options[0].SkipSSLVerification,
+		Headers:             opts.Headers,
+		SkipSSLVerification: opts.SkipSSLVerification,
 	}
 
 	client.HTTPClient = &http.Client{
