@@ -51,11 +51,11 @@ func NewClient(baseURL string, options ...Options) (*Client, error) {
 }
 
 func (c *Client) Get(endpoint string, params ...url.Values) (*http.Response, error) {
-    var queryParams url.Values
+	var queryParams url.Values
 
-    if len(params) > 0 {
-        queryParams = params[0]
-    }
+	if len(params) > 0 {
+		queryParams = params[0]
+	}
 
 	req, err := c.newRequest(http.MethodGet, endpoint, queryParams, nil)
 	if err != nil {
@@ -73,9 +73,9 @@ func (c *Client) newRequest(method, endpoint string, params url.Values, body io.
 
 	fullURL := c.BaseURL.ResolveReference(rel)
 
-    if params != nil {
-        fullURL.RawQuery = params.Encode()
-    }
+	if params != nil {
+		fullURL.RawQuery = params.Encode()
+	}
 
 	req, err := http.NewRequest(method, fullURL.String(), body)
 	if err != nil {
