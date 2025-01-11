@@ -50,8 +50,14 @@ func NewClient(baseURL string, options ...Options) (*Client, error) {
 	return client, nil
 }
 
-func (c *Client) Get(endpoint string) (*http.Response, error) {
-	req, err := c.newRequest(http.MethodGet, endpoint, nil)
+func (c *Client) Get(endpoint string, params ...url.Values) (*http.Response, error) {
+    var queryParams url.Values
+
+    if len(params) > 0 {
+        queryParams = params[0]
+    }
+
+	req, err := c.newRequest(http.MethodGet, endpoint, queryParams, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +65,17 @@ func (c *Client) Get(endpoint string) (*http.Response, error) {
 	return c.do(req)
 }
 
-func (c *Client) newRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
+func (c *Client) newRequest(method, endpoint string, params url.Values, body io.Reader) (*http.Request, error) {
 	rel, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	fullURL := c.BaseURL.ResolveReference(rel)
+
+    if params != nil {
+        fullURL.RawQuery = params.Encode()
+    }
 
 	req, err := http.NewRequest(method, fullURL.String(), body)
 	if err != nil {
