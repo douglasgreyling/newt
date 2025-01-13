@@ -2,9 +2,9 @@ package client
 
 import (
 	"crypto/tls"
-	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Options struct {
@@ -13,6 +13,8 @@ type Options struct {
 }
 
 type Headers map[string]string
+
+type Params map[string]string
 
 type Client struct {
 	BaseURL             *url.URL
@@ -50,14 +52,14 @@ func NewClient(baseURL string, options ...Options) (*Client, error) {
 	return client, nil
 }
 
-func (c *Client) Get(endpoint string, params ...url.Values) (*http.Response, error) {
-	var queryParams url.Values
+func (c *Client) Get(endpoint string, params ...Params) (*http.Response, error) {
+	var prms Params
 
 	if len(params) > 0 {
-		queryParams = params[0]
+		prms = params[0]
 	}
 
-	req, err := c.newRequest(http.MethodGet, endpoint, queryParams, nil)
+	req, err := c.newRequest(http.MethodGet, endpoint, prms)
 	if err != nil {
 		return nil, err
 	}
@@ -65,19 +67,25 @@ func (c *Client) Get(endpoint string, params ...url.Values) (*http.Response, err
 	return c.do(req)
 }
 
-func (c *Client) newRequest(method, endpoint string, params url.Values, body io.Reader) (*http.Request, error) {
-	rel, err := url.Parse(endpoint)
+func (c *Client) Post(endpoint string, params Params) (*http.Response, error) {
+	req, err := c.newRequest(http.MethodPost, endpoint, params)
 	if err != nil {
 		return nil, err
 	}
 
-	fullURL := c.BaseURL.ResolveReference(rel)
+	return c.do(req)
+}
 
-	if params != nil {
-		fullURL.RawQuery = params.Encode()
+func (c *Client) newRequest(method, endpoint string, params Params) (*http.Request, error) {
+	parsedUrl, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
 	}
 
-	req, err := http.NewRequest(method, fullURL.String(), body)
+	resolvedUrl := c.BaseURL.ResolveReference(parsedUrl)
+	formData := c.parseParams(params).Encode()
+
+	req, err := http.NewRequest(method, resolvedUrl.String(), strings.NewReader(formData))
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +94,23 @@ func (c *Client) newRequest(method, endpoint string, params url.Values, body io.
 		req.Header.Set(key, value)
 	}
 
+	if c.Headers["Content-Type"] == "" {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
 	return req, nil
 }
 
 func (c *Client) do(req *http.Request) (*http.Response, error) {
 	return c.HTTPClient.Do(req)
+}
+
+func (c *Client) parseParams(params Params) url.Values {
+	body := make(url.Values)
+
+	for key, value := range params {
+		body.Add(key, value)
+	}
+
+	return body
 }
