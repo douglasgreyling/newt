@@ -53,13 +53,13 @@ func NewClient(baseURL string, options ...Options) (*Client, error) {
 }
 
 func (c *Client) Get(endpoint string, params ...Params) (*http.Response, error) {
-	var pars Params
+	var prms Params
 
 	if len(params) > 0 {
-		pars = params[0]
+		prms = params[0]
 	}
 
-	req, err := c.newRequest(http.MethodGet, endpoint, pars)
+	req, err := c.newRequest(http.MethodGet, endpoint, prms)
 	if err != nil {
 		return nil, err
 	}
