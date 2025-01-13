@@ -1,9 +1,10 @@
-
-![Newt Logo](newt.png)
+<div align="center">
+  <img src="newt.png" alt="Newt Logo" width="200" />
+</div>
 
 # Newt 🦎
 
-A simple HTTP client written in Go!
+An attempt to make a smaller, cuter, and more user-friendly HTTP client for Go.
 
 ## Sample Usage
 
